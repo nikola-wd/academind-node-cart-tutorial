@@ -12,7 +12,6 @@ var flash = require('connect-flash');
 var validator = require('express-validator');
 var MongoStore = require('connect-mongo')(session);
 
-
 var index = require('./routes/index');
 var userRoutes = require('./routes/user');
 
@@ -27,7 +26,7 @@ app.set('view engine', '.hbs');
 
 
 // order of middlewares is important
-// uncomment after placing your favicon in /public
+// uncomment after placing your favicon in /public !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -58,14 +57,17 @@ app.use('/user', userRoutes);
 app.use('/', index);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
 
-// error handler
-app.use(function(err, req, res, next) {
+// error handlers
+
+// development error handler
+// will print stacktrace
+app.use((err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

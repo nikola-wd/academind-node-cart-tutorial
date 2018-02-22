@@ -3,20 +3,37 @@ var router = express.Router();
 var csrf = require('csurf');
 var passport = require('passport');
 
+var Order = require('../models/order');
+var Cart = require('../models/cart');
+
 var csrfProtection = csrf();
 router.use(csrfProtection); // all routes in this router include csrf protection
 
 
 
 router.get('/profile', isLoggedIn, (req, res, next) => {
-  res.render('user/profile');
+  Order.find({user: req.user}, (err, orders) => {
+    if (err) {
+      return res.write('Error!');
+    }
+    var cart;
+    orders.forEach((order) => {
+      cart = new Cart(order.cart);
+      order.items = cart.generateArray();
+    });
+    res.render('/user/profile', { orders: orders });
+  });
 });
 
 
-router.get('/logout', (req, res, next) => {
+router.get('/logout', isLoggedIn, (req, res, next) => {
   req.logout(); // passport's method
   res.redirect('/');
 });
+
+
+// ---------
+
 
 // checking all routes with notLoggedIn middleware guard (profile & logout is ^ so it doesn't check that route)
 router.use('/', notLoggedIn, (req, res, next) => {
@@ -28,6 +45,7 @@ router.get('/signup', (req, res, next) => {
   var messages = req.flash('error');
   res.render('user/signup', { csrfToken: req.csrfToken(), messages: messages, hasErrors: messages.length > 0 });
 });
+
 
 router.post('/signup', passport.authenticate('local.signup', {
   failureRedirect: '/user/signup',
@@ -49,6 +67,7 @@ router.get('/signin', (req, res, next) => {
   var messages = req.flash('error');
   res.render('user/signin', { csrfToken: req.csrfToken(), messages: messages, hasErrors: messages.length > 0 });
 });
+
 
 router.post('/signin', passport.authenticate('local.signin', {
   failureRedirect: '/user/signin',

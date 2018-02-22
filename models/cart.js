@@ -7,7 +7,7 @@ module.exports = function Cart(oldCart) {
 
 
  
-  this.add = function(item, id) {
+  this.add = (item, id) => {
     var storedItem = this.items[id]; // see if item already in cart
     if (!storedItem) {
       storedItem = this.items[id] = {item: item, qty: 0, price: 0};
@@ -20,7 +20,26 @@ module.exports = function Cart(oldCart) {
 
 
 
-  this.generateArray = function() {
+  this.reduceByOne = (id) => {
+    this.items[id].qty--;
+    this.items[id].price -= this.items[id].item.price;
+    this.totalQty--;
+    this.totalPrice -= this.items[id].item.price;
+
+    if (this.items[id].qty <= 0) {
+      delete this.items[id];
+    }
+  };
+
+
+  this.removeItem = (id) => {
+    this.totalQty -= this.items[id].qty;
+    this.totalPrice -= this.items[id].price;
+    delete this.items[id];
+  };
+
+
+  this.generateArray = () => {
     var arr = [];
     for (var id in this.items) {
       arr.push(this.items[id]);

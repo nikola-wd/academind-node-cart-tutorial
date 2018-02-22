@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
-var Product = require('../models/product');
 var Cart = require('../models/cart');
+var Product = require('../models/product');
 var Order = require('../models/order');
 
 
@@ -10,13 +10,13 @@ var Order = require('../models/order');
 /* GET home page. */
 router.get('/', (req, res, next) => {
   var successMsg = req.flash('success')[0];
-  Product.find((err, products) => {
+  Product.find((err, docs) => {
     var productChunks = [];
     var chunkSize = 3;
-    for (var i = 0; i < products.length; i+=chunkSize) {
-      productChunks.push(products.slice(i, i + chunkSize));
+    for (var i = 0; i < docs.length; i += chunkSize) {
+      productChunks.push(docs.slice(i, i + chunkSize));
     }
-    res.render('shop/index', { title: 'Express', products: productChunks, successMsg: successMsg, noMessages: !successMsg });
+    res.render('shop/index', { title: 'Shopping Cart', products: productChunks, successMsg: successMsg, noMessages: !successMsg });
   });
 });
 
@@ -37,6 +37,7 @@ router.get('/add-to-cart/:id', (req, res, next) => {
   });
 });
 
+
 // shopping cart page 
 router.get('/shopping-cart', (req, res, next) => {
   if (!req.session.cart) {
@@ -46,21 +47,23 @@ router.get('/shopping-cart', (req, res, next) => {
   res.render('shop/shopping-cart', {products: cart.generateArray(), totalPrice: cart.totalPrice});
 });
 
+
 // checkout route
 router.get('/checkout', isLoggedIn, (req, res, next) => {
   if (!req.session.cart) {
     // return res.render('shop/shopping-cart', { products: null });
-    return res.redirect('shop/shopping-cart');
+    return res.redirect('/shopping-cart');
   }
   var cart = new Cart(req.session.cart);
   var errMsg = req.flash('error')[0];
   res.render('shop/checkout', {total: cart.totalPrice, errMsg: errMsg, noError: !errMsg});
 });
 
+
 // finish payment 
 router.post('/checkout', isLoggedIn, (req, res, next) => {
   if (!req.session.cart) {
-    return res.redirect('shop/shopping-cart');
+    return res.redirect('/shopping-cart');
   }
   var cart = new Cart(req.session.cart);
 
@@ -72,8 +75,8 @@ router.post('/checkout', isLoggedIn, (req, res, next) => {
     amount: cart.totalPrice * 100,
     currency: "usd",
     source: req.body.stripeToken, // obtained with Stripe.js
-    description: "Test charge"
-  }, function (err, charge) {
+    description: "Test Charge"
+  }, (err, charge) => {
     // asynchronously called
     if (err) {
       req.flash('error', err.message);
@@ -88,14 +91,16 @@ router.post('/checkout', isLoggedIn, (req, res, next) => {
       paymentId: charge.id
     });
     order.save((err, result) => {
-      req.flash('success', 'Succesfully bought a product');
+      req.flash('success', 'Succesfully bought a produc!t');
       req.session.cart = null;
       res.redirect('/');
     });
   });
-  
-
 });
+
+
+
+
 
 module.exports = router;
 

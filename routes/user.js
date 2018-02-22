@@ -30,10 +30,19 @@ router.get('/signup', (req, res, next) => {
 });
 
 router.post('/signup', passport.authenticate('local.signup', {
-  successRedirect: '/user/profile',
   failureRedirect: '/user/signup',
   failureFlash: true
-}));
+}), (req, res, next) => {
+  // if we signup and user tried to checkout, after signup he will be redirected to checkout page again
+  if (req.session.oldUrl) {
+    var oldUrl = req.session.oldUr;
+    req.session.oldUrl = null;
+    res.redirect(oldUrl);
+  } else {
+    // normal login
+    res.redirect('/user/profile');
+  }
+});
 
 
 router.get('/signin', (req, res, next) => {
@@ -47,8 +56,9 @@ router.post('/signin', passport.authenticate('local.signin', {
 }), (req, res, next) => {
   // if we login and user tried to checkout, after login he will be redirected to checkout page again
   if (req.session.oldUrl) {
-    res.redirect(req.session.oldUrl);
+    var oldUrl = req.session.oldUr;
     req.session.oldUrl = null;
+    res.redirect(oldUrl);
   } else {
     // normal login
     res.redirect('/user/profile');
